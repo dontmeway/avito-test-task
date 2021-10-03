@@ -1,56 +1,42 @@
 import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import { Route, useHistory } from 'react-router';
+import { getPhotoById } from './API/getPhotoById';
+import { getPhotos } from './API/getPhotos';
+import { Modal } from './components/Modal';
+import { Loader } from './Loader';
+import { useAppDispatch, useAppSelector } from './store/hooks/reduxHooks';
+
 
 function App() {
+  const [isModal, setModal] = React.useState<boolean>(false)
+  const {photos, isLoading, error} = useAppSelector(state => state.photosStore)
+  const dispatch = useAppDispatch()
+  React.useEffect(() => {
+    dispatch(getPhotos("https://boiling-refuge-66454.herokuapp.com/images"))
+  }, [])
+  
+  function handleImage(id: number) {
+    dispatch(getPhotoById(id))
+    setModal(true)
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
+        <Route path = "/">
+          {isModal && <Modal setModal = {setModal}/>}
+          <h1>TEST APP</h1>
+          <div className = "photos">
+            {isLoading ? 
+              [...Array(6).fill(null)].map((el, index) => <Loader key = {index} />) : 
+              photos.map(el => 
+                <img
+                  onClick = {() => handleImage(el.id)} 
+                  key = {el.id} 
+                  src = {el.url} 
+                  alt = ""/>)}
+          </div>
+        </Route>
+        
     </div>
   );
 }
